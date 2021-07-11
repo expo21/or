@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { useHistory } from "react-router-dom";
 import Button from "@material-ui/core/Button";
 import Accordion from "@material-ui/core/Accordion";
 import AccordionSummary from "@material-ui/core/AccordionSummary";
@@ -11,10 +12,13 @@ import IconButton from "@material-ui/core/IconButton";
 import EditIcon from "@material-ui/icons/Edit";
 import axios from "axios";
 export default function Review({ formData, navigation, progress }) {
+  let history = useHistory();
+  console.log({ review: formData });
   const { go } = navigation;
   useEffect(() => {
     progress(100);
   }, []);
+
   let step_3_details = [];
   var custom_options;
   if (
@@ -47,18 +51,27 @@ export default function Review({ formData, navigation, progress }) {
       { "ReadyMade Style Number": formData.step_3.ready_style_number },
     ];
   }
-  const { gender, name, email, address, Tel } = formData.step_1;
+  const { gender, name, email, address, tel } = formData.step_1;
   const submitData = (formData) => {
-    axios
-      .post("http://localhost:3232/api/createOrder", formData)
-      .then((res) => {
-        console.log(res);
-      });
+    if (formData.step_1.order_number) {
+      console.log("order number hai");
+    } else {
+      axios
+        .post("http://localhost:3232/api/createOrder", formData)
+        .then((res) => {
+          console.log(res);
+          if (res.data.status) {
+            history.push("/app/orders/orderList");
+          }
+        });
+    }
   };
 
   let d = new Date();
   let date = `${d.getDate()}-${d.getMonth() + 1}-${d.getFullYear()}`;
+  const stepDetails = { ...formData.step_3, ...formData.custom };
 
+  console.log({ stepDetails });
   return (
     <div className="review_wrapper">
       <h4 className="step_heading">Review your details</h4>
@@ -72,7 +85,7 @@ export default function Review({ formData, navigation, progress }) {
             { Name: name },
             { Email: email },
             { Address: address },
-            { Tel: Tel },
+            { Tel: tel },
           ]}
         />
         <RenderAccordion
@@ -81,7 +94,13 @@ export default function Review({ formData, navigation, progress }) {
           details={[{ "Garment Type": formData.step_2.garment_type }]}
         />
 
-        <RenderAccordion summary="Step_3" go={go} details={step_3_details} />
+        <RenderAccordion
+          summary="Step_3"
+          go={go}
+          details={Object.keys(stepDetails).map((i) => {
+            return { [i]: stepDetails[i] };
+          })}
+        />
         <RenderAccordion
           summary="Step_4"
           go={go}
@@ -94,7 +113,9 @@ export default function Review({ formData, navigation, progress }) {
         <div className="form_footer">
           <Button onClick={() => navigation.previous()}>Back</Button>
 
-          <Button onClick={() => submitData(formData)}>Submit</Button>
+          <Button onClick={() => submitData(formData)}>
+            {formData.step_1.order_number ? "Update" : "Submit"}
+          </Button>
         </div>
       </div>
     </div>
@@ -102,6 +123,7 @@ export default function Review({ formData, navigation, progress }) {
 }
 export const RenderAccordion = ({ summary, details, go }) => (
   <Accordion>
+    {console.log(details)}
     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
       {summary}
     </AccordionSummary>

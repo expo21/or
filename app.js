@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");
 const PORT = 3232;
 require("dotenv").config();
 
@@ -13,7 +14,7 @@ mongoose.Promise = global.Promise;
 
 // Connecting to the database
 mongoose
-  .connect("mongodb://localhost:27017/orders", {
+  .connect("mongodb://localhost:27017/OR", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useFindAndModify: false,
@@ -30,6 +31,11 @@ mongoose
 app.use(express.json());
 app.use(cors());
 app.use("/uploads", express.static("./app/routes/uploads"));
+app.use(express.static(path.join(__dirname, "client/build")));
+app.get("/", (req, res) => {
+  console.log(__dirname);
+  res.sendFile(path.join(__dirname, "client/build", "index.html"));
+});
 
 //order routes
 const orderRoutes = require("./app/routes/order.routes");

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useHistory } from "react-router-dom";
+
 import { Drawer, IconButton, List } from "@material-ui/core";
 import {
   Home as HomeIcon,
@@ -28,67 +30,79 @@ import {
   toggleSidebar,
 } from "../../context/LayoutContext";
 
-var structure = [];
-let token = localStorage.getItem("auth-token");
-
-let isAdmin = JSON.parse(atob(token.split(".")[1]));
-
-if (isAdmin.userType === 1) {
-  structure = [
-    { id: 0, label: "Dashboard", link: "/app/dashboard", icon: <HomeIcon /> },
-    {
-      id: 1,
-      label: "Orders",
-      link: "/app/orders",
-      icon: <TableIcon />,
-      children: [
-        { label: "Create Order", link: "/app/orders/createOrder" },
-        { label: "Order List", link: "/app/orders/orderList" },
-      ],
-    },
-    {
-      id: 2,
-      label: "Garment Types",
-      link: "/app/garmentTypes",
-      icon: <TableIcon />,
-      // children: [
-      //   { label: "Add Garment", link: "/app/garments/addGarment" },
-      //   { label: "Garment List", link: "/app/garments/garmentList" },
-
-      // ],
-    },
-    {
-      id: 3,
-      label: "Styles",
-      link: "/app/styles",
-      icon: <TableIcon />,
-      // children: [
-      //   { label: "Add Style", link: "/app/styles/addStyle" },
-      //   { label: "Style List", link: "/app/styles/styleList" },
-      //   // { label: "Maps", link: "/app/ui/maps" },
-      // ],
-    },
-    { id: 4, label: "Options", link: "/app/options", icon: <UIElementsIcon /> },
-    { id: 5, label: "Setting", link: "/app/setting", icon: <HomeIcon /> },
-  ];
-} else {
-  structure = [
-    { id: 0, label: "Dashboard", link: "/app/dashboard", icon: <HomeIcon /> },
-    {
-      id: 1,
-      label: "Orders",
-      link: "/app/orders",
-      icon: <TableIcon />,
-      children: [
-        { label: "Create Order", link: "/app/orders/createOrder" },
-        { label: "Order List", link: "/app/orders/orderList" },
-      ],
-    },
-    { id: 2, label: "Setting", link: "/app/setting", icon: <HomeIcon /> },
-  ];
-}
-
 function Sidebar({ location }) {
+  console.log(localStorage.getItem("auth-token"));
+
+  var structure = [];
+  let token = localStorage.getItem("auth-token");
+
+  // let isAdmin = JSON.parse(atob(token.split(".")[1]));
+  var isAdmin = { userType: 2 };
+  if (token !== null) {
+    isAdmin = JSON.parse(atob(token.split(".")[1]));
+    console.log(isAdmin);
+  }
+
+  if (isAdmin?.userType === 1) {
+    structure = [
+      { id: 0, label: "Dashboard", link: "/app/dashboard", icon: <HomeIcon /> },
+      {
+        id: 1,
+        label: "Orders",
+        link: "/app/orders",
+        icon: <TableIcon />,
+        children: [
+          { label: "Create Order", link: "/app/orders/createOrder" },
+          { label: "Order List", link: "/app/orders/orderList" },
+        ],
+      },
+      {
+        id: 2,
+        label: "Garment Types",
+        link: "/app/garmentTypes",
+        icon: <TableIcon />,
+        // children: [
+        //   { label: "Add Garment", link: "/app/garments/addGarment" },
+        //   { label: "Garment List", link: "/app/garments/garmentList" },
+
+        // ],
+      },
+      {
+        id: 3,
+        label: "Styles",
+        link: "/app/styles",
+        icon: <TableIcon />,
+        // children: [
+        //   { label: "Add Style", link: "/app/styles/addStyle" },
+        //   { label: "Style List", link: "/app/styles/styleList" },
+        //   // { label: "Maps", link: "/app/ui/maps" },
+        // ],
+      },
+      {
+        id: 4,
+        label: "Options",
+        link: "/app/options",
+        icon: <UIElementsIcon />,
+      },
+      { id: 5, label: "Setting", link: "/app/setting", icon: <HomeIcon /> },
+    ];
+  } else {
+    structure = [
+      { id: 0, label: "Dashboard", link: "/app/dashboard", icon: <HomeIcon /> },
+      {
+        id: 1,
+        label: "Orders",
+        link: "/app/orders",
+        icon: <TableIcon />,
+        children: [
+          { label: "Create Order", link: "/app/orders/createOrder" },
+          { label: "Order List", link: "/app/orders/orderList" },
+        ],
+      },
+      { id: 2, label: "Setting", link: "/app/setting", icon: <HomeIcon /> },
+    ];
+  }
+
   var classes = useStyles();
   var theme = useTheme();
 

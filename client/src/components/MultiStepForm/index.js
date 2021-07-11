@@ -12,13 +12,9 @@ const defaultData = {
     gender: "men",
   },
   step_2: {},
-  step_3: {
-    custom: {
-      // monogram_text: {},
-      // monogram_position: [],
-    },
-  },
+  step_3: {},
   step_4: {},
+  custom: {},
 };
 
 const steps = [
@@ -30,14 +26,18 @@ const steps = [
   { id: "submit" },
 ];
 
-export default function MultiStepForm({ progress }) {
-  const [formData, setForm] = useForm(defaultData);
+export default function MultiStepForm({ progress, Order }) {
+  // console.log(Order);
+  // const orderDetails = Order
+  const [formData, setForm] = useForm(Order ? Order : defaultData);
+
   const { step, navigation } = useStep({
     steps,
     initialStep: 0,
   });
 
   const props = { formData, setForm, navigation, progress };
+
   switch (step.id) {
     case "step_1":
       return <Step_1 {...props} />;

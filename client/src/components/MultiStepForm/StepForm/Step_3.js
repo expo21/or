@@ -6,6 +6,7 @@ import axios from "axios";
 import PantImage from "../../../images/pants.jpg";
 
 export default function Step_3({ formData, setForm, navigation, progress }) {
+  // formData.step_3.custom = {};
   const [checkBoxData, setCheckBoxData] = useState(new Map());
   const [checkedData, setCheckedData] = useState([]);
   const [apiData, setApiData] = useState([]);
@@ -16,7 +17,7 @@ export default function Step_3({ formData, setForm, navigation, progress }) {
   const onChecked = (e) => {
     try {
       checkBoxData.set(e.target.name, e.target.checked);
-      console.log(checkBoxData);
+
       let obj = e.target.value;
       if (checkedData.includes(obj)) {
         console.log("in");
@@ -54,13 +55,15 @@ export default function Step_3({ formData, setForm, navigation, progress }) {
         // setApiData(response.data.data);
       });
   };
+  console.log({ formData });
+
   useEffect(() => {
     progress(50);
-    setCheckedData(formData.step_3.custom.Monogram_Position);
+    // setCheckedData(formData.step_3.custom.Monogram_Position);
     fetchData();
     console.log({ formData });
   }, []);
-
+  console.log(custom);
   return (
     <div>
       {readyMade.map((i, index) => {
@@ -73,14 +76,17 @@ export default function Step_3({ formData, setForm, navigation, progress }) {
                   <div key={j._id} className={j.input_type}>
                     <input
                       type={j.input_type}
-                      id={j.title}
-                      value={j.title}
-                      name={`step_3.${i.title}`}
-                      checked={formData.step_3[i.title] === j.title}
+                      id={j.title.toLowerCase()}
+                      value={j.title.toLowerCase()}
+                      name={`step_3.${i.title.toLowerCase()}`}
+                      checked={
+                        formData.step_3[i.title.toLowerCase()] ===
+                        j.title.toLowerCase()
+                      }
                       onChange={setForm}
                     />{" "}
                     <label
-                      htmlFor={j.title}
+                      htmlFor={j.title.toLowerCase()}
                       style={{ backgroundImage: `url(${PantImage})` }}
                     >
                       {j.title} <div className="overley" />
@@ -101,8 +107,8 @@ export default function Step_3({ formData, setForm, navigation, progress }) {
               type="radio"
               id="ready"
               value="ready"
-              name={`step_3.garmentStyle`}
-              checked={formData.step_3.garmentStyle === "ready"}
+              name={`step_3.garment_style`}
+              checked={formData.step_3.garment_style === "ready"}
               onChange={setForm}
             />
             <label htmlFor="ready">
@@ -114,8 +120,8 @@ export default function Step_3({ formData, setForm, navigation, progress }) {
               type="radio"
               id="custom"
               value="custom"
-              name={`step_3.garmentStyle`}
-              checked={formData.step_3.garmentStyle === "custom"}
+              name={`step_3.garment_style`}
+              checked={formData.step_3.garment_style === "custom"}
               onChange={setForm}
             />{" "}
             <label htmlFor="custom">
@@ -125,7 +131,7 @@ export default function Step_3({ formData, setForm, navigation, progress }) {
         </div>
       </div>
 
-      {true && (
+      {formData.step_3.garment_style === "ready" && (
         <div className="step_form-wrapper">
           <h3 className="selection_subheading">Ready Style Number</h3>
           <div>
@@ -140,25 +146,37 @@ export default function Step_3({ formData, setForm, navigation, progress }) {
         </div>
       )}
 
-      {false &&
+      {formData.step_3.garment_style === "custom" &&
         custom.map((i, index) => {
           return (
             <div key={index} className="step_form-wrapper">
               <h3 className="selection_subheading">{i.title}</h3>
               <div className="selection_wrap grid4col">
                 {i.options.map((j) => {
+                  console.log({ j });
                   return (
                     <div key={j._id} className={j.input_type}>
                       <input
                         type={j.input_type}
-                        id={j.title}
+                        id={j._id}
                         value={j.title}
-                        name={`step_3.custom.${i.title}`}
-                        checked={formData.step_3.custom[i.title] === j.title}
+                        name={`custom.${i.title
+                          .toLowerCase()
+                          .split(" ")
+                          .join("_")}`}
                         onChange={setForm}
+                        checked={
+                          formData.custom[
+                            i.title.toLowerCase().split(" ").join("_")
+                          ] === j.title
+                        }
+                        // onChange={setForm}
                       />
-                      style={{ backgroundImage: `url(${PantImage})` }}
-                      <label htmlFor={j.title}>
+
+                      <label
+                        htmlFor={j._id}
+                        style={{ backgroundImage: `url(${PantImage})` }}
+                      >
                         {j.title} <div className="overley" />
                       </label>
                     </div>

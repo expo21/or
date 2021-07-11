@@ -32,13 +32,14 @@ exports.createOrder = async (obj) => {
       tel: obj.step_1.tel,
       gender: obj.step_1.gender,
       garment_type: obj.step_2.garment_type,
-      choose_style: obj.step_3.choose_style,
+      garment_style: obj.step_3.garment_style,
+      ready_style_number: obj.step_3.ready_style_number,
       fabric: obj.step_3.fabric,
       fitting: obj.step_3.fitting,
-      custom: obj.step_3.custom,
+      custom: obj.custom,
       measurements: obj.step_4,
     });
-    console.log(newOrder);
+
     let savedOrder = await newOrder.save();
     console.log(savedOrder);
 
@@ -65,9 +66,27 @@ exports.getOrderByName = async (obj) => {
 exports.getOrderByOrderId = async (orderId) => {
   try {
     let order = await Order.findOne({ order_number: orderId });
-    console.log(order);
+
     if (order) {
-      return order;
+      return {
+        step_1: {
+          name: order.name,
+          email: order.email,
+          address: order.address,
+          tel: order.tel,
+          gender: order.gender,
+          order_number: order.order_number,
+        },
+        step_2: { garment_type: order.garment_type },
+        step_3: {
+          garment_style: order.garment_style,
+          ready_style_number: order.ready_style_number,
+          fabric: order.fabric,
+          fitting: order.fitting,
+        },
+        step_4: order.measurements || {},
+        custom: order.custom,
+      };
     }
   } catch (error) {
     console.log(error);
@@ -76,7 +95,25 @@ exports.getOrderByOrderId = async (orderId) => {
 
 exports.getAllOrder = async () => {
   try {
-    let orders = await Order.find();
-    return orders;
+    let orders = await Order.find(
+      {},
+      { measurements: 0, updatedAt: 0, __v: 0 }
+    );
+    let arr = orders.map((obj) => {
+      return {
+        order_number: obj.order_number,
+        name: obj.name,
+        email: obj.email,
+        address: obj.address,
+        tel: obj.tel,
+        garment_type: obj.garment_type,
+        fitting: obj.fitting,
+        fabric: obj.fabric,
+        garment_style: obj.garment_style,
+        booking: obj.booking,
+        status: obj.status,
+      };
+    });
+    return arr;
   } catch (error) {}
 };

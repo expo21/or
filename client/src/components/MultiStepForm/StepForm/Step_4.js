@@ -33,7 +33,7 @@ export default function Step_4({ formData, setForm, navigation, progress }) {
                 placeholder={x}
                 label={x}
                 type="number"
-                value={formData[x]}
+                value={formData?.step_4[x]}
                 name={`step_4.${x}`}
                 // onFocus={func}
                 onChange={setForm}

@@ -3,7 +3,7 @@ import Container from "@material-ui/core/Container";
 import Button from "@material-ui/core/Button";
 
 export default function Step_1({ formData, setForm, navigation, progress }) {
-  const { gender, name, email, address, Tel } = formData.step_1;
+  const { gender, name, email, address, tel } = formData?.step_1;
 
   const [errors, setErrors] = useState({});
   useEffect(() => {
@@ -14,7 +14,7 @@ export default function Step_1({ formData, setForm, navigation, progress }) {
   const handleNext = () => {
     if (
       formData.step_1.name !== undefined &&
-      formData.step_1.Tel !== undefined
+      formData.step_1.tel !== undefined
     ) {
       navigation.next();
     } else {
@@ -22,8 +22,8 @@ export default function Step_1({ formData, setForm, navigation, progress }) {
       if (formData.step_1.name === undefined) {
         error.name = "Please provide your name.";
       }
-      if (formData.step_1.Tel === undefined) {
-        error.Tel = "Please provide your telepone number..";
+      if (formData.step_1.tel === undefined) {
+        error.tel = "Please provide your telepone number..";
       }
       setErrors(error);
     }
@@ -35,8 +35,8 @@ export default function Step_1({ formData, setForm, navigation, progress }) {
     if (errors.name !== "") {
       setErrors({ name: "" });
     }
-    if (errors.Tel !== "") {
-      setErrors({ Tel: "" });
+    if (errors.tel !== "") {
+      setErrors({ tel: "" });
     }
   };
 
@@ -113,13 +113,13 @@ export default function Step_1({ formData, setForm, navigation, progress }) {
               placeholder="Telephone"
               label="Telephone"
               type="text"
-              value={Tel || ""}
+              value={tel || ""}
               onFocus={func}
-              name="step_1.Tel"
+              name="step_1.tel"
               onChange={setForm}
               autoComplete="off"
             />
-            {errors.Tel && <p>{errors.Tel}</p>}
+            {errors.tel && <p>{errors.tel}</p>}
           </div>
         </div>
 

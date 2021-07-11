@@ -35,6 +35,8 @@ import AddGarment from "../../pages/AddGarment";
 
 import GarmentStyle from "../../pages/GarmentStyle";
 import StyleOptions from "../../pages/StyleOptions/index.jsx";
+import OrderDetails from "../../pages/OrderDetails/OrderDetails";
+import Setting from "../../pages/Setting/Setting";
 
 function Layout(props) {
   var classes = useStyles();
@@ -56,12 +58,13 @@ function Layout(props) {
             <Route path="/app/dashboard" component={Dashboard} />
             <Route path="/app/orders/createOrder" component={OrderForm} />
 
-            <Route path="/app/orders/orderList" component={Tables} />
+            <Route path="/app/orders/orderList" component={OrderList} />
+            <Route path="/app/order/:orderNumber" component={OrderDetails} />
             <Route path="/app/garmentTypes" component={AddGarment} />
             {/* <Route path="/app/garments/garmentList" component={Tables} /> */}
             <Route path="/app/styles" component={GarmentStyle} />
             <Route path="/app/options" component={StyleOptions} />
-            <Route path="/app/setting" component={Tables} />
+            <Route path="/app/setting" component={Setting} />
             <Route path="/app/orders" component={Tables} />
 
             {/* <Route path="/app/orders/orderList" component={Tables} /> */}

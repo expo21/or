@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PageTitle from "../../components/PageTitle/PageTitle";
 import { makeStyles } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
@@ -14,6 +14,14 @@ import Backdrop from "@material-ui/core/Backdrop";
 import Fade from "@material-ui/core/Fade";
 import axios from "axios";
 import Modal from "@material-ui/core/Modal";
+import Paper from "@material-ui/core/Paper";
+import Table from "@material-ui/core/Table";
+import TableBody from "@material-ui/core/TableBody";
+import TableCell from "@material-ui/core/TableCell";
+import TableContainer from "@material-ui/core/TableContainer";
+import TableHead from "@material-ui/core/TableHead";
+import TablePagination from "@material-ui/core/TablePagination";
+import TableRow from "@material-ui/core/TableRow";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -21,12 +29,7 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     justifyContent: "center",
   },
-  paper: {
-    backgroundColor: theme.palette.background.paper,
-    border: "1px #000",
-    boxShadow: theme.shadows[5],
-    padding: theme.spacing(2, 4, 3),
-  },
+
   paper: {
     backgroundColor: theme.palette.background.paper,
     border: "1px #000",
@@ -84,20 +87,170 @@ const MenuProps = {
   },
 };
 
+const columns = [
+  // {
+  //   name: "_id",
+  //   label: "ID",
+  //   options: {
+  //     filter: false,
+  //     sort: false,
+  //   },
+  // },
+  {
+    name: "title",
+    label: "Title",
+    options: {
+      filter: true,
+      sort: true,
+    },
+  },
+  {
+    name: "input_type",
+    label: "Input Type",
+    options: {
+      filter: true,
+      sort: true,
+    },
+  },
+  {
+    name: "garment_type",
+    label: "Garment Types",
+    options: {
+      filter: false,
+      sort: false,
+    },
+  },
+  {
+    name: "style_option",
+    label: "Garment Style",
+    options: {
+      filter: false,
+      sort: false,
+    },
+  },
+  {
+    name: "status",
+    label: "Status",
+    options: {
+      filter: true,
+      sort: true,
+    },
+  },
+];
+
 export default function StyleOptions() {
   const classes = useStyles();
-  const [open, setOpen] = useState(false);
 
+  //open Model
+  const [open, setOpen] = useState(false);
   const handleOpen = () => {
     setOpen(true);
   };
 
   const handleClose = () => {
     setOpen(false);
+    setError("");
   };
 
-  const handleChange = () => {};
-  const handleSubmit = () => {};
+  const [title, setTitle] = useState("");
+  const [input_type, setInput_type] = useState("");
+  const [garment_type, setGarment_type] = useState([]);
+  const [style_option, setStyle_option] = useState("");
+  const [allGarments, setAllGarments] = useState([]);
+  const [allStyleOptions, setAllStyleOptions] = useState([]);
+  const [error, setError] = useState("");
+
+  //Model end
+
+  //table
+  const [optionList, setOptionList] = useState([]);
+  const [page, setPage] = React.useState(0);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(+event.target.value);
+    setPage(0);
+  };
+
+  //table
+
+  const handleSubmit = () => {
+    const formData = {
+      title,
+      input_type,
+      garment_type,
+      style_option,
+    };
+    if (
+      formData.title === "" &&
+      formData.garment_type.length === 0 &&
+      formData.input_type === "" &&
+      formData.style_option === ""
+    ) {
+      console.log(formData);
+      setError("Please provide all details.");
+    } else {
+      setError("");
+      axios
+        .post("http://localhost:3232/api/options/addOptions", formData)
+        .then((response) => {
+          console.log(response.data);
+          handleClose();
+          setOptionList(response.data.data);
+        })
+        .catch((error) => console.log(error));
+    }
+  };
+
+  //fetch all options
+  const fetchAllOptions = () => {
+    axios
+      .get("http://localhost:3232/api/options/optionsList")
+      .then((response) => {
+        console.log(response.data);
+        setOptionList(response.data.data);
+      })
+      .catch((error) => console.log(error));
+  };
+
+  const fetchAllStyleOptions = () => {
+    axios
+      .get("http://localhost:3232/api/styleOptions")
+      .then((response) => {
+        console.log(response.data);
+        setAllStyleOptions(response.data.data);
+      })
+      .catch((error) => console.log(error));
+  };
+
+  const fetchAllGarment = () => {
+    axios
+      .get("http://localhost:3232/api/allGarments")
+      .then((response) => {
+        console.log(response.data);
+        setAllGarments(response.data.data);
+      })
+      .catch((error) => console.log(error));
+  };
+
+  const printArray = (arr) => {
+    console.log({ arr });
+    let iterator = arr.values();
+    for (let elements of iterator) {
+      return elements.title;
+    }
+  };
+
+  useEffect(() => {
+    fetchAllOptions();
+    fetchAllStyleOptions();
+    fetchAllGarment();
+  }, [optionList]);
+
   return (
     <>
       <PageTitle
@@ -113,82 +266,182 @@ export default function StyleOptions() {
           </Button>
         }
       />
-      <Modal
-        aria-labelledby="transition-modal-title"
-        aria-describedby="transition-modal-description"
-        className={classes.modal}
-        open={open}
-        onClose={handleClose}
-        closeAfterTransition
-        BackdropComponent={Backdrop}
-        BackdropProps={{
-          timeout: 1000,
-        }}
-      >
-        <Fade in={open}>
-          <div className={classes.paper}>
-            <h2 id="transition-modal-title">Add Option</h2>
-            <div className={classes.titleModal}>
-              <TextField
-                id="standard-basic"
-                label="Title"
-                name="title"
-                // value={newOption.title}
-                onChange={handleChange}
-                variant="outlined"
-              />
-            </div>
+      <Grid>
+        <Grid item xs={12}>
+          <Paper className={classes.GarmentTabel}>
+            <TableContainer className={classes.container}>
+              <Table stickyHeader aria-label="sticky table">
+                <TableHead>
+                  <TableRow>
+                    {columns.map((column) => (
+                      <TableCell
+                        key={column.id}
+                        align={column.align}
+                        style={{ minWidth: column.minWidth }}
+                      >
+                        {column.label}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {optionList
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((row) => {
+                      return (
+                        <TableRow
+                          hover
+                          role="checkbox"
+                          tabIndex={-1}
+                          key={row.code}
+                        >
+                          {columns.map((column) => {
+                            const value = row[column.name];
 
-            <div className={classes.titleModal}>
-              <TextField
-                // id="outlined-select-currency"
-                select
-                label="Style Type"
-                name="styleType"
-                // value={styleType}
-                helperText="Select Style Type."
-                variant="outlined"
-                // value={styleOption}
-                // onChange={(e) => setStyleType(e.target.value)}
-              >
-                {[
-                  { label: "Ready Made", value: 0 },
-                  { label: "custom", value: 1 },
-                ].map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </div>
-            <div className={classes.titleSelect}>
-              <InputLabel id="demo-mutiple-name-label">Garments</InputLabel>
-              <Select
-                labelId="demo-mutiple-name-label"
-                id="demo-mutiple-name"
-                multiple
-                // value={selectedGarments}
-                onChange={handleChange}
-                input={<Input />}
-                MenuProps={MenuProps}
-              >
-                {/* {[].map((item) => (
-                  <MenuItem key={item._id} value={item._id}>
-                    {`${item.title} | ${item.gender}`}
-                  </MenuItem>
-                ))} */}
-              </Select>
-            </div>
+                            return (
+                              <TableCell
+                                key={column.name}
+                                align={column.align}
+                                onClick={() => console.log(row)}
+                              >
+                                {/* {Array.isArray(value)
+                                  ? printArray(value)
+                                  : column.name === "custom"
+                                  ? printChooseStyle(value)
+                                  : column.name === "status"
+                                  ? printStatus(value)
+                                  : value} */}
 
-            <div className={classes.titleButton}>
-              <Button variant="outlined">Cancel</Button>
-              <Button variant="outlined" color="primary" onClick={handleSubmit}>
-                Submit
-              </Button>
+                                {Array.isArray(value)
+                                  ? printArray(value)
+                                  : typeof value === "object"
+                                  ? value.title
+                                  : value}
+                              </TableCell>
+                            );
+                          })}
+                        </TableRow>
+                      );
+                    })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            <TablePagination
+              rowsPerPageOptions={[10, 25, 100]}
+              component="div"
+              count={optionList.length}
+              rowsPerPage={rowsPerPage}
+              page={page}
+              onPageChange={handleChangePage}
+              onRowsPerPageChange={handleChangeRowsPerPage}
+            />
+          </Paper>
+        </Grid>
+
+        <Modal
+          aria-labelledby="transition-modal-title"
+          aria-describedby="transition-modal-description"
+          className={classes.modal}
+          open={open}
+          onClose={handleClose}
+          closeAfterTransition
+          BackdropComponent={Backdrop}
+          BackdropProps={{
+            timeout: 1000,
+          }}
+        >
+          <Fade in={open}>
+            <div className={classes.paper}>
+              <h2 id="transition-modal-title">Add Option</h2>
+              <div className={classes.titleModal}>
+                <TextField
+                  id="standard-basic"
+                  label="Title"
+                  name="title"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  variant="outlined"
+                />
+              </div>
+
+              <div className={classes.titleModal}>
+                <TextField
+                  // id="outlined-select-currency"
+                  select
+                  label="Input Type"
+                  name="input_type"
+                  value={input_type}
+                  helperText="Option Type"
+                  variant="outlined"
+                  // value={styleOption}
+                  onChange={(e) => setInput_type(e.target.value)}
+                >
+                  {[
+                    { label: "Radio", value: "radio" },
+                    { label: "Checkbox", value: "checkbox" },
+                    { label: "Textbox", value: "text" },
+                  ].map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </div>
+              <div className={classes.titleModal}>
+                <TextField
+                  // id="outlined-select-currency"
+                  select
+                  label="Style Type"
+                  name="style_option"
+                  value={style_option}
+                  helperText="Option Type"
+                  variant="outlined"
+                  // value={styleOption}
+                  onChange={(e) => setStyle_option(e.target.value)}
+                >
+                  {allStyleOptions.map((option) => (
+                    <MenuItem key={option._id} value={option._id}>
+                      {option.title}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </div>
+              <div className={classes.titleSelect}>
+                <InputLabel id="demo-mutiple-name-label">Garments</InputLabel>
+                <Select
+                  labelId="demo-mutiple-name-label"
+                  id="demo-mutiple-name"
+                  multiple
+                  value={garment_type}
+                  onChange={(e) => setGarment_type(e.target.value)}
+                  input={<Input />}
+                  MenuProps={MenuProps}
+                >
+                  {allGarments.map((item) => (
+                    <MenuItem key={item._id} value={item._id}>
+                      {`${item.title} | ${item.gender}`}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </div>
+              <div>{error && <p>{error}</p>}</div>
+
+              <div className={classes.titleButton}>
+                <Button variant="outlined" onClick={handleClose}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={handleSubmit}
+                >
+                  Submit
+                </Button>
+              </div>
             </div>
-          </div>
-        </Fade>
-      </Modal>
+          </Fade>
+        </Modal>
+      </Grid>
     </>
   );
 }

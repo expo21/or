@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import PageTitle from "../../components/PageTitle/PageTitle";
 import { makeStyles } from "@material-ui/core/styles";
 import TextField from "@material-ui/core/TextField";
+import { useHistory } from "react-router-dom";
 
 import Modal from "@material-ui/core/Modal";
 import Backdrop from "@material-ui/core/Backdrop";
@@ -150,15 +151,19 @@ export default function GarmentStyle() {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [garmentList, setGarmentList] = useState([]);
+  const [title, setTitle] = useState("");
   const [selectedGarments, setSelectedGarments] = useState([]);
   const [styleType, setStyleType] = useState(0);
+  const [styleList, setStyleList] = useState([]);
   const handleOpen = () => {
     setOpen(true);
   };
 
   const handleClose = () => {
+    setError("");
     setOpen(false);
   };
+  const [error, setError] = useState("");
 
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -175,13 +180,48 @@ export default function GarmentStyle() {
   const handleChange = (event) => {
     setSelectedGarments(event.target.value);
   };
-
+  const history = useHistory();
   const handleSubmit = () => {
-    console.log(selectedGarments);
+    let formData = {
+      title: title,
+      garment_type: selectedGarments,
+      custom: styleType,
+    };
+
+    console.log(formData.title === "" && formData.garment_type.length === 0);
+
+    if (formData.title === "" && formData.garment_type.length === 0) {
+      console.log(formData);
+      setError("Please provide all details.");
+    } else {
+      setError("");
+
+      axios
+        .post(`http://localhost:3232/api/styleOptions`, formData)
+        .then((response) => {
+          console.log(response);
+          handleClose();
+          history.push("/app/styles");
+        })
+        .catch();
+    }
   };
-  const fetchGarmentLIst = () => {
+  const fetchStyleLIst = () => {
     axios
       .get("http://localhost:3232/api/styleOptions")
+      .then((response) => {
+        const { status, data } = response.data;
+        if (status) {
+          console.log(data);
+          setStyleList(data);
+        }
+      })
+      .catch();
+  };
+
+  const fetchGarmentLIst = () => {
+    axios
+      .get("http://localhost:3232/api/allGarments")
       .then((response) => {
         const { status, data } = response.data;
         if (status) {
@@ -191,7 +231,9 @@ export default function GarmentStyle() {
       })
       .catch();
   };
+
   useEffect(() => {
+    fetchStyleLIst();
     fetchGarmentLIst();
   }, []);
 
@@ -203,7 +245,6 @@ export default function GarmentStyle() {
   };
 
   const printChooseStyle = (number) => {
-    console.log("chala k nahi");
     if (number === 0) {
       return "ReadyMade";
     } else {
@@ -254,7 +295,7 @@ export default function GarmentStyle() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {garmentList
+                  {styleList
                     .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                     .map((row) => {
                       return (
@@ -319,8 +360,8 @@ export default function GarmentStyle() {
                   id="standard-basic"
                   label="Title"
                   name="title"
-                  // value={newOption.title}
-                  onChange={handleChange}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
                   variant="outlined"
                 />
               </div>
@@ -361,14 +402,16 @@ export default function GarmentStyle() {
                 >
                   {garmentList.map((item) => (
                     <MenuItem key={item._id} value={item._id}>
-                      {`${item.title} | ${item.gender}`}
+                      {`${item.title} | ${item.gender} `}
                     </MenuItem>
                   ))}
                 </Select>
               </div>
-
+              <div>{error && <p>{error}</p>}</div>
               <div className={classes.titleButton}>
-                <Button variant="outlined">Cancel</Button>
+                <Button variant="outlined" onClick={handleClose}>
+                  Cancel
+                </Button>
                 <Button
                   variant="outlined"
                   color="primary"

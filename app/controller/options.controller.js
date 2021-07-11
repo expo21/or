@@ -2,8 +2,11 @@ const Options = require("../model/Options.model.js");
 
 exports.getAllOptionList = async () => {
   try {
-    let list = await Options.find({});
+    let list = await Options.find({})
+      .populate("style_option")
+      .populate("garment_type");
     if (list.length > 0) {
+      console.log({ list });
       return list;
     }
     return false;

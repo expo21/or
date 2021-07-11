@@ -24,6 +24,7 @@ import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TablePagination from "@material-ui/core/TablePagination";
 import TableRow from "@material-ui/core/TableRow";
+import Avatar from "@material-ui/core/Avatar";
 
 const useStyles = makeStyles((theme) => ({
   form1: {
@@ -83,56 +84,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const columns = [
-  { id: "name", label: "Name", minWidth: 170 },
-  { id: "code", label: "ISO\u00a0Code", minWidth: 100 },
-  {
-    id: "population",
-    label: "Population",
-    minWidth: 170,
-    align: "right",
-    format: (value) => value.toLocaleString("en-US"),
-  },
-  {
-    id: "size",
-    label: "Size\u00a0(km\u00b2)",
-    minWidth: 170,
-    align: "right",
-    format: (value) => value.toLocaleString("en-US"),
-  },
-  {
-    id: "density",
-    label: "Density",
-    minWidth: 170,
-    align: "right",
-    format: (value) => value.toFixed(2),
-  },
-];
-
-function createData(name, code, population, size) {
-  const density = population / size;
-  return { name, code, population, size, density };
-}
-
-// const rows = [
-//   createData("India", "IN", 1324171354, 3287263),
-//   createData("China", "CN", 1403500365, 9596961),
-//   createData("Italy", "IT", 60483973, 301340),
-//   createData("United States", "US", 327167434, 9833520),
-//   createData("Canada", "CA", 37602103, 9984670),
-//   createData("Australia", "AU", 25475400, 7692024),
-//   createData("Germany", "DE", 83019200, 357578),
-//   createData("Ireland", "IE", 4857000, 70273),
-//   createData("Mexico", "MX", 126577691, 1972550),
-//   createData("Japan", "JP", 126317000, 377973),
-//   createData("France", "FR", 67022000, 640679),
-//   createData("United Kingdom", "GB", 67545757, 242495),
-//   createData("Russia", "RU", 146793744, 17098246),
-//   createData("Nigeria", "NG", 200962417, 923768),
-//   createData("Brazil", "BR", 210147125, 8515767),
-// ];
-
-// console.log({ rows });
 export default function AddGarment() {
   const classes = useStyles();
   const [tableData, setTableData] = useState([]);
@@ -141,7 +92,7 @@ export default function AddGarment() {
     gender: "",
     image: "",
   });
-
+  const [error, setError] = useState("");
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -149,15 +100,25 @@ export default function AddGarment() {
     formData.append("gender", newOption.gender);
     formData.append("title", newOption.title);
 
-    console.log(newOption);
-    // axios
-    //   .post("http://localhost:3232/api/garmentType", formData)
-    //   .then((res) => {
-    //     console.log(res);
-    //   })
-    //   .catch((err) => {
-    //     console.log(err);
-    //   });
+    if (
+      newOption.title === "" &&
+      newOption.gender === "" &&
+      newOption.image === ""
+    ) {
+      setError("Please Provide all Details.");
+    } else {
+      setError("");
+      axios
+        .post("http://localhost:3232/api/garmentType", formData)
+        .then((res) => {
+          console.log(res);
+          handleClose();
+        })
+        .catch((err) => {
+          console.log(err);
+          handleClose();
+        });
+    }
   };
 
   const columns = [
@@ -330,9 +291,16 @@ export default function AddGarment() {
                                 align={column.align}
                                 onClick={() => console.log(row)}
                               >
-                                {column.name === "status"
-                                  ? printStatus(value)
-                                  : value}
+                                {column.name === "status" ? (
+                                  printStatus(value)
+                                ) : column.name === "image" ? (
+                                  <Avatar
+                                    alt={value}
+                                    src={`http://localhost:3232/uploads/${value}`}
+                                  />
+                                ) : (
+                                  value
+                                )}
                               </TableCell>
                             );
                           })}
@@ -419,9 +387,11 @@ export default function AddGarment() {
                 </Button>
               </label>
             </div>
-
+            <p>{error}</p>
             <div className={classes.titleButton}>
-              <Button variant="outlined">Cancel</Button>
+              <Button variant="outlined" onClick={handleClose}>
+                Cancel
+              </Button>
               <Button variant="outlined" color="primary" onClick={handleSubmit}>
                 Submit
               </Button>
