@@ -2,8 +2,9 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import MultiStepForm from "../../components/MultiStepForm/index";
+import { getOrderDetails } from "../../helper/helperFunctions";
 import "../OrderForm/orderForm.css";
-export default function OrderDetails({ location }) {
+export default function OrderDetails() {
   let { orderNumber } = useParams();
   const [progressValue, setProgressValue] = useState(0);
   const progress = (value) => {
@@ -12,18 +13,15 @@ export default function OrderDetails({ location }) {
   const [Order, setOrder] = useState(null);
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:3232/api/orderByOrderId/${orderNumber}`)
+    getOrderDetails(orderNumber)
       .then((response) => {
-        console.log(response);
-        if (response.data.status === true) {
-          setOrder(response.data.data);
+        if (response) {
+          setOrder(response);
         }
       })
       .catch();
   }, []);
   if (Order !== null) {
-    console.log({ Order });
     return (
       <div>
         <div className="progress">
@@ -37,6 +35,6 @@ export default function OrderDetails({ location }) {
       </div>
     );
   } else {
-    return <div>kjhdffkghdkg</div>;
+    return <div>No Order with this orderId</div>;
   }
 }

@@ -1,5 +1,6 @@
 const Option = require("../model/Options.model");
 const StyleOption = require("../model/StyleOptions.model");
+const multer = require("multer");
 
 const express = require("express");
 const {
@@ -10,8 +11,36 @@ const {
 
 const router = express.Router();
 
+const { v4: uuidv4 } = require("uuid");
+let path = require("path");
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "app/routes/uploads");
+  },
+  filename: function (req, file, cb) {
+    cb(null, uuidv4() + "-" + Date.now() + path.extname(file.originalname));
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  const allowedFileTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+  ];
+  if (allowedFileTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
+let upload = multer({ storage, fileFilter });
+
 //add option to the styles
-router.post("/options/addOptions", async (req, res) => {
+router.post("/options/addOptions", upload.single("image"), async (req, res) => {
   try {
     const newOption = new Option({
       title: req.body.title,
@@ -19,7 +48,9 @@ router.post("/options/addOptions", async (req, res) => {
       garment_type: req.body.garment_type,
       style_option: req.body.style_option,
       status: 1,
+      image: req.file.filename,
     });
+    console.log(newOption);
     const savedOption = await newOption.save();
     if (savedOption) {
       let saveToStyle = await StyleOption.updateOne(

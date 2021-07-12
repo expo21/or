@@ -12,6 +12,7 @@ import Table from "../dashboard/components/Table/Table";
 // data
 import mock from "../dashboard/mock";
 import axios from "axios";
+import { getOrderList } from "../../helper/helperFunctions";
 
 const datatableData = [
   ["Joe James", "Example Inc.", "Yonkers", "NY"],
@@ -106,18 +107,13 @@ export default function OrderList() {
   let [apiData, setApiData] = useState([]);
   let history = useHistory();
   const fetchData = () => {
-    axios
-      .get("http://localhost:3232/api/order")
+    getOrderList()
       .then((response) => {
-        console.log(response);
-
-        let { data } = response.data;
-        console.log(data);
         // let sortedData = data.map((item) => flattenObject(item));
 
         // columns = Object.keys(data[0]).map((item) => item);
         setColumns(
-          Object.keys(data[0])
+          Object.keys(response[0])
             .map((item) => item)
             .map((obj) => {
               return {
@@ -130,8 +126,7 @@ export default function OrderList() {
               };
             })
         );
-        console.log({ columns });
-        setApiData(data);
+        setApiData(response);
       })
       .catch((error) => {
         console.log(error);

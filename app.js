@@ -14,7 +14,7 @@ mongoose.Promise = global.Promise;
 
 // Connecting to the database
 mongoose
-  .connect("mongodb://localhost:27017/OR", {
+  .connect(process.env.DATABASE_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useFindAndModify: false,
@@ -33,7 +33,6 @@ app.use(cors());
 app.use("/uploads", express.static("./app/routes/uploads"));
 app.use(express.static(path.join(__dirname, "client/build")));
 app.get("/", (req, res) => {
-  console.log(__dirname);
   res.sendFile(path.join(__dirname, "client/build", "index.html"));
 });
 

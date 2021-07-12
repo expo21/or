@@ -20,7 +20,12 @@ const storage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  const allowedFileTypes = ["image/jpeg", "image/jpg", "image/png"];
+  const allowedFileTypes = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+  ];
   if (allowedFileTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
@@ -37,7 +42,6 @@ router.post("/garmentType", upload.single("image"), (req, res) => {
     gender: req.body.gender,
     image: req.file.filename,
   };
-  console.log(dataObj);
   createGarmentOption(dataObj)
     .then((result) => {
       if (!result)
@@ -57,7 +61,7 @@ router.get("/garmentsByGender/:gender", (req, res) => {
         return res.send({
           status: false,
           message: "List not found ",
-          data: result,
+          data: [],
         });
       }
     })

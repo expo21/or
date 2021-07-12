@@ -7,7 +7,6 @@ import { useHistory } from "react-router-dom";
 import Modal from "@material-ui/core/Modal";
 import Backdrop from "@material-ui/core/Backdrop";
 import Fade from "@material-ui/core/Fade";
-import axios from "axios";
 
 import Paper from "@material-ui/core/Paper";
 import Table from "@material-ui/core/Table";
@@ -17,6 +16,11 @@ import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TablePagination from "@material-ui/core/TablePagination";
 import TableRow from "@material-ui/core/TableRow";
+import {
+  getGarmentStyleList,
+  getGarmentList,
+  addStyleOption,
+} from "../../helper/helperFunctions";
 
 import {
   Button,
@@ -97,14 +101,14 @@ const MenuProps = {
 };
 
 const columns = [
-  {
-    name: "_id",
-    label: "ID",
-    options: {
-      filter: false,
-      sort: false,
-    },
-  },
+  // {
+  //   name: "_id",
+  //   label: "ID",
+  //   options: {
+  //     filter: false,
+  //     sort: false,
+  //   },
+  // },
   {
     name: "title",
     label: "Title",
@@ -155,6 +159,7 @@ export default function GarmentStyle() {
   const [selectedGarments, setSelectedGarments] = useState([]);
   const [styleType, setStyleType] = useState(0);
   const [styleList, setStyleList] = useState([]);
+  const [state, setState] = useState("");
   const handleOpen = () => {
     setOpen(true);
   };
@@ -188,54 +193,49 @@ export default function GarmentStyle() {
       custom: styleType,
     };
 
-    console.log(formData.title === "" && formData.garment_type.length === 0);
-
     if (formData.title === "" && formData.garment_type.length === 0) {
       console.log(formData);
       setError("Please provide all details.");
     } else {
       setError("");
 
-      axios
-        .post(`http://localhost:3232/api/styleOptions`, formData)
+      addStyleOption(formData)
         .then((response) => {
-          console.log(response);
-          handleClose();
-          history.push("/app/styles");
+          if (response) {
+            handleClose();
+            setState(true);
+          }
         })
-        .catch();
+        .catch((error) => console.log(error));
     }
   };
-  const fetchStyleLIst = () => {
-    axios
-      .get("http://localhost:3232/api/styleOptions")
-      .then((response) => {
-        const { status, data } = response.data;
-        if (status) {
-          console.log(data);
-          setStyleList(data);
-        }
-      })
-      .catch();
+  const fetchStyleLIst = async () => {
+    try {
+      let resultedData = await getGarmentStyleList();
+
+      if (resultedData !== undefined) {
+        setStyleList(resultedData);
+      } else {
+        setStyleList([]);
+      }
+    } catch (error) {}
   };
 
-  const fetchGarmentLIst = () => {
-    axios
-      .get("http://localhost:3232/api/allGarments")
-      .then((response) => {
-        const { status, data } = response.data;
-        if (status) {
-          console.log(data);
-          setGarmentList(data);
-        }
-      })
-      .catch();
+  const fetchGarmentLIst = async () => {
+    try {
+      let resultedData = await getGarmentList();
+      if (resultedData.length > 0) {
+        setGarmentList(resultedData);
+      } else {
+        setGarmentList([]);
+      }
+    } catch (error) {}
   };
 
   useEffect(() => {
     fetchStyleLIst();
     fetchGarmentLIst();
-  }, []);
+  }, [state]);
 
   const printArray = (arr) => {
     let iterator = arr.values();
@@ -277,69 +277,76 @@ export default function GarmentStyle() {
       />
 
       <Grid>
-        <Grid item xs={12}>
-          <Paper className={classes.GarmentTabel}>
-            <TableContainer className={classes.container}>
-              <Table stickyHeader aria-label="sticky table">
-                <TableHead>
-                  <TableRow>
-                    {columns.map((column) => (
-                      <TableCell
-                        key={column.id}
-                        align={column.align}
-                        style={{ minWidth: column.minWidth }}
-                      >
-                        {column.label}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {styleList
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((row) => {
-                      return (
-                        <TableRow
-                          hover
-                          role="checkbox"
-                          tabIndex={-1}
-                          key={row.code}
+        {styleList.length > 0 ? (
+          <Grid item xs={12}>
+            <Paper className={classes.GarmentTabel}>
+              <TableContainer className={classes.container}>
+                <Table stickyHeader aria-label="sticky table">
+                  <TableHead>
+                    <TableRow>
+                      {columns.map((column) => (
+                        <TableCell
+                          key={column.id}
+                          align={column.align}
+                          style={{ minWidth: column.minWidth }}
                         >
-                          {columns.map((column) => {
-                            const value = row[column.name];
-                            return (
-                              <TableCell
-                                key={column.name}
-                                align={column.align}
-                                onClick={() => console.log(row)}
-                              >
-                                {Array.isArray(value)
-                                  ? printArray(value)
-                                  : column.name === "custom"
-                                  ? printChooseStyle(value)
-                                  : column.name === "status"
-                                  ? printStatus(value)
-                                  : value}
-                              </TableCell>
-                            );
-                          })}
-                        </TableRow>
-                      );
-                    })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <TablePagination
-              rowsPerPageOptions={[10, 25, 100]}
-              component="div"
-              count={garmentList.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
-          </Paper>
-        </Grid>
+                          {column.label}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {styleList
+                      .slice(
+                        page * rowsPerPage,
+                        page * rowsPerPage + rowsPerPage
+                      )
+                      .map((row) => {
+                        return (
+                          <TableRow
+                            hover
+                            role="checkbox"
+                            tabIndex={-1}
+                            key={row.code}
+                          >
+                            {columns.map((column) => {
+                              const value = row[column.name];
+                              return (
+                                <TableCell
+                                  key={column.name}
+                                  align={column.align}
+                                  onClick={() => console.log(row)}
+                                >
+                                  {Array.isArray(value)
+                                    ? printArray(value)
+                                    : column.name === "custom"
+                                    ? printChooseStyle(value)
+                                    : column.name === "status"
+                                    ? printStatus(value)
+                                    : value}
+                                </TableCell>
+                              );
+                            })}
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <TablePagination
+                rowsPerPageOptions={[10, 25, 100]}
+                component="div"
+                count={garmentList.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+              />
+            </Paper>
+          </Grid>
+        ) : (
+          <div>There is no data please add some ...</div>
+        )}
         <Modal
           aria-labelledby="transition-modal-title"
           aria-describedby="transition-modal-description"

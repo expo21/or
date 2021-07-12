@@ -25,6 +25,7 @@ import TableHead from "@material-ui/core/TableHead";
 import TablePagination from "@material-ui/core/TablePagination";
 import TableRow from "@material-ui/core/TableRow";
 import Avatar from "@material-ui/core/Avatar";
+import { getGarmentList, addGarment } from "../../helper/helperFunctions";
 
 const useStyles = makeStyles((theme) => ({
   form1: {
@@ -87,6 +88,8 @@ const useStyles = makeStyles((theme) => ({
 export default function AddGarment() {
   const classes = useStyles();
   const [tableData, setTableData] = useState([]);
+  const [state, setState] = useState("");
+
   const [newOption, setNewOption] = useState({
     title: "",
     gender: "",
@@ -108,11 +111,12 @@ export default function AddGarment() {
       setError("Please Provide all Details.");
     } else {
       setError("");
-      axios
-        .post("http://localhost:3232/api/garmentType", formData)
+      addGarment(formData)
         .then((res) => {
-          console.log(res);
-          handleClose();
+          if (res) {
+            handleClose();
+            setState(true);
+          }
         })
         .catch((err) => {
           console.log(err);
@@ -200,22 +204,23 @@ export default function AddGarment() {
     setNewOption({ ...newOption, image: e.target.files[0] });
   };
 
-  const fetchGarmentLIst = () => {
-    axios
-      .get("http://localhost:3232/api/allGarments")
-      .then((response) => {
-        const { status, data } = response.data;
-        if (status) {
-          console.log(data);
-          setTableData(data);
-        }
-      })
-      .catch();
+  //fetch all garments
+  const fetchGarmentLIst = async () => {
+    try {
+      const resultedData = await getGarmentList();
+      if (resultedData.length > 0) {
+        setTableData(resultedData);
+      } else {
+        setTableData([]);
+      }
+    } catch (error) {
+      console.log({ error });
+    }
   };
-
+  //Effects hooks
   useEffect(() => {
     fetchGarmentLIst();
-  }, []);
+  }, [state]);
 
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -252,76 +257,82 @@ export default function AddGarment() {
           </Button>
         }
       />
-
-      <Grid container spacing={4}>
-        <Grid item xs={12}>
-          <Paper className={classes.GarmentTabel}>
-            <TableContainer className={classes.container}>
-              <Table stickyHeader aria-label="sticky table">
-                <TableHead>
-                  <TableRow>
-                    {columns.map((column) => (
-                      <TableCell
-                        key={column.id}
-                        align={column.align}
-                        style={{ minWidth: column.minWidth }}
-                      >
-                        {column.label}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {tableData
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((row) => {
-                      return (
-                        <TableRow
-                          hover
-                          role="checkbox"
-                          tabIndex={-1}
-                          key={row.code}
+      {tableData.length > 0 ? (
+        <Grid container spacing={4}>
+          <Grid item xs={12}>
+            <Paper className={classes.GarmentTabel}>
+              <TableContainer className={classes.container}>
+                <Table stickyHeader aria-label="sticky table">
+                  <TableHead>
+                    <TableRow>
+                      {columns.map((column) => (
+                        <TableCell
+                          key={column.id}
+                          align={column.align}
+                          style={{ minWidth: column.minWidth }}
                         >
-                          {columns.map((column) => {
-                            const value = row[column.name];
-                            console.log(value);
-                            return (
-                              <TableCell
-                                key={column.id}
-                                align={column.align}
-                                onClick={() => console.log(row)}
-                              >
-                                {column.name === "status" ? (
-                                  printStatus(value)
-                                ) : column.name === "image" ? (
-                                  <Avatar
-                                    alt={value}
-                                    src={`http://localhost:3232/uploads/${value}`}
-                                  />
-                                ) : (
-                                  value
-                                )}
-                              </TableCell>
-                            );
-                          })}
-                        </TableRow>
-                      );
-                    })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <TablePagination
-              rowsPerPageOptions={[10, 25, 100]}
-              component="div"
-              count={tableData.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
-          </Paper>
+                          {column.label}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {tableData
+                      .slice(
+                        page * rowsPerPage,
+                        page * rowsPerPage + rowsPerPage
+                      )
+                      .map((row) => {
+                        return (
+                          <TableRow
+                            hover
+                            role="checkbox"
+                            tabIndex={-1}
+                            key={row.code}
+                          >
+                            {columns.map((column) => {
+                              const value = row[column.name];
+                              console.log(value);
+                              return (
+                                <TableCell
+                                  key={column.id}
+                                  align={column.align}
+                                  onClick={() => console.log(row)}
+                                >
+                                  {column.name === "status" ? (
+                                    printStatus(value)
+                                  ) : column.name === "image" ? (
+                                    <Avatar
+                                      alt={value}
+                                      src={`${process.env.REACT_APP_BACKEND_URL}/uploads/${value}`}
+                                    />
+                                  ) : (
+                                    value
+                                  )}
+                                </TableCell>
+                              );
+                            })}
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <TablePagination
+                rowsPerPageOptions={[10, 25, 100]}
+                component="div"
+                count={tableData.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+              />
+            </Paper>
+          </Grid>
         </Grid>
-      </Grid>
+      ) : (
+        <div>There is no data please add some ...</div>
+      )}
       <Modal
         aria-labelledby="transition-modal-title"
         aria-describedby="transition-modal-description"

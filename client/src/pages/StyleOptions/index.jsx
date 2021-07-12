@@ -12,7 +12,8 @@ import {
 } from "@material-ui/core";
 import Backdrop from "@material-ui/core/Backdrop";
 import Fade from "@material-ui/core/Fade";
-import axios from "axios";
+import Avatar from "@material-ui/core/Avatar";
+
 import Modal from "@material-ui/core/Modal";
 import Paper from "@material-ui/core/Paper";
 import Table from "@material-ui/core/Table";
@@ -22,6 +23,12 @@ import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TablePagination from "@material-ui/core/TablePagination";
 import TableRow from "@material-ui/core/TableRow";
+import {
+  addOption,
+  getGarmentList,
+  getGarmentStyleList,
+  getStyleOptionsList,
+} from "../../helper/helperFunctions";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -97,6 +104,14 @@ const columns = [
   //   },
   // },
   {
+    name: "image",
+    label: "Image",
+    options: {
+      filter: false,
+      sort: false,
+    },
+  },
+  {
     name: "title",
     label: "Title",
     options: {
@@ -150,14 +165,18 @@ export default function StyleOptions() {
   const handleClose = () => {
     setOpen(false);
     setError("");
+    setTitle("");
+    setGarment_type([]);
+    setInput_type("");
   };
-
+  const [image, setImage] = useState(null);
   const [title, setTitle] = useState("");
   const [input_type, setInput_type] = useState("");
   const [garment_type, setGarment_type] = useState([]);
   const [style_option, setStyle_option] = useState("");
   const [allGarments, setAllGarments] = useState([]);
   const [allStyleOptions, setAllStyleOptions] = useState([]);
+  const [state, setState] = useState("");
   const [error, setError] = useState("");
 
   //Model end
@@ -179,28 +198,34 @@ export default function StyleOptions() {
   //table
 
   const handleSubmit = () => {
-    const formData = {
+    const newOption = {
       title,
       input_type,
       garment_type,
       style_option,
+      image,
     };
+    const formData = new FormData();
+    formData.append("image", newOption.image);
+    formData.append("garment_type", newOption.garment_type);
+    formData.append("title", newOption.title);
+    formData.append("input_type", newOption.input_type);
+    formData.append("style_option", newOption.style_option);
     if (
       formData.title === "" &&
       formData.garment_type.length === 0 &&
       formData.input_type === "" &&
-      formData.style_option === ""
+      formData.style_option === "" &&
+      formData.image === ""
     ) {
-      console.log(formData);
       setError("Please provide all details.");
     } else {
       setError("");
-      axios
-        .post("http://localhost:3232/api/options/addOptions", formData)
+      addOption(formData)
         .then((response) => {
-          console.log(response.data);
+          console.log(response);
           handleClose();
-          setOptionList(response.data.data);
+          setState(true);
         })
         .catch((error) => console.log(error));
     }
@@ -208,31 +233,36 @@ export default function StyleOptions() {
 
   //fetch all options
   const fetchAllOptions = () => {
-    axios
-      .get("http://localhost:3232/api/options/optionsList")
+    getStyleOptionsList()
       .then((response) => {
-        console.log(response.data);
-        setOptionList(response.data.data);
+        if (response.length > 0) {
+          setOptionList(response);
+        } else setOptionList([]);
       })
       .catch((error) => console.log(error));
   };
 
   const fetchAllStyleOptions = () => {
-    axios
-      .get("http://localhost:3232/api/styleOptions")
+    getGarmentStyleList()
       .then((response) => {
-        console.log(response.data);
-        setAllStyleOptions(response.data.data);
+        if (response.length > 0) {
+          setAllStyleOptions(response);
+        } else {
+          setAllStyleOptions([]);
+        }
       })
       .catch((error) => console.log(error));
   };
 
   const fetchAllGarment = () => {
-    axios
-      .get("http://localhost:3232/api/allGarments")
+    getGarmentList()
       .then((response) => {
-        console.log(response.data);
-        setAllGarments(response.data.data);
+        if (response.length > 0) {
+          console.log(response);
+          setAllGarments(response);
+        } else {
+          setAllGarments([]);
+        }
       })
       .catch((error) => console.log(error));
   };
@@ -249,7 +279,7 @@ export default function StyleOptions() {
     fetchAllOptions();
     fetchAllStyleOptions();
     fetchAllGarment();
-  }, [optionList]);
+  }, [state]);
 
   return (
     <>
@@ -267,44 +297,48 @@ export default function StyleOptions() {
         }
       />
       <Grid>
-        <Grid item xs={12}>
-          <Paper className={classes.GarmentTabel}>
-            <TableContainer className={classes.container}>
-              <Table stickyHeader aria-label="sticky table">
-                <TableHead>
-                  <TableRow>
-                    {columns.map((column) => (
-                      <TableCell
-                        key={column.id}
-                        align={column.align}
-                        style={{ minWidth: column.minWidth }}
-                      >
-                        {column.label}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {optionList
-                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                    .map((row) => {
-                      return (
-                        <TableRow
-                          hover
-                          role="checkbox"
-                          tabIndex={-1}
-                          key={row.code}
+        {optionList.length > 0 ? (
+          <Grid item xs={12}>
+            <Paper className={classes.GarmentTabel}>
+              <TableContainer className={classes.container}>
+                <Table stickyHeader aria-label="sticky table">
+                  <TableHead>
+                    <TableRow>
+                      {columns.map((column) => (
+                        <TableCell
+                          key={column.id}
+                          align={column.align}
+                          style={{ minWidth: column.minWidth }}
                         >
-                          {columns.map((column) => {
-                            const value = row[column.name];
+                          {column.label}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {optionList
+                      .slice(
+                        page * rowsPerPage,
+                        page * rowsPerPage + rowsPerPage
+                      )
+                      .map((row) => {
+                        return (
+                          <TableRow
+                            hover
+                            role="checkbox"
+                            tabIndex={-1}
+                            key={row.code}
+                          >
+                            {columns.map((column) => {
+                              const value = row[column.name];
 
-                            return (
-                              <TableCell
-                                key={column.name}
-                                align={column.align}
-                                onClick={() => console.log(row)}
-                              >
-                                {/* {Array.isArray(value)
+                              return (
+                                <TableCell
+                                  key={column.name}
+                                  align={column.align}
+                                  onClick={() => console.log(row)}
+                                >
+                                  {/* {Array.isArray(value)
                                   ? printArray(value)
                                   : column.name === "custom"
                                   ? printChooseStyle(value)
@@ -312,31 +346,41 @@ export default function StyleOptions() {
                                   ? printStatus(value)
                                   : value} */}
 
-                                {Array.isArray(value)
-                                  ? printArray(value)
-                                  : typeof value === "object"
-                                  ? value.title
-                                  : value}
-                              </TableCell>
-                            );
-                          })}
-                        </TableRow>
-                      );
-                    })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            <TablePagination
-              rowsPerPageOptions={[10, 25, 100]}
-              component="div"
-              count={optionList.length}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onPageChange={handleChangePage}
-              onRowsPerPageChange={handleChangeRowsPerPage}
-            />
-          </Paper>
-        </Grid>
+                                  {Array.isArray(value) ? (
+                                    printArray(value)
+                                  ) : typeof value === "object" ? (
+                                    value.title
+                                  ) : column.name === "image" ? (
+                                    <Avatar
+                                      alt={value}
+                                      src={`${process.env.REACT_APP_BACKEND_URL}/uploads/${value}`}
+                                    />
+                                  ) : (
+                                    value
+                                  )}
+                                </TableCell>
+                              );
+                            })}
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <TablePagination
+                rowsPerPageOptions={[10, 25, 100]}
+                component="div"
+                count={optionList.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handleChangePage}
+                onRowsPerPageChange={handleChangeRowsPerPage}
+              />
+            </Paper>
+          </Grid>
+        ) : (
+          <div>There is no data please add some ...</div>
+        )}
 
         <Modal
           aria-labelledby="transition-modal-title"
@@ -423,6 +467,26 @@ export default function StyleOptions() {
                     </MenuItem>
                   ))}
                 </Select>
+              </div>
+              <div className={classes.titleFile}>
+                <input
+                  accept="image/*"
+                  className={classes.input}
+                  style={{ display: "none" }}
+                  id="raised-button-file"
+                  type="file"
+                  name="image"
+                  onChange={(e) => setImage(e.target.files[0])}
+                />
+                <label htmlFor="raised-button-file">
+                  <Button
+                    variant="raised"
+                    component="span"
+                    className={classes.button}
+                  >
+                    <p>Upload</p>
+                  </Button>
+                </label>
               </div>
               <div>{error && <p>{error}</p>}</div>
 

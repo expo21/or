@@ -4,6 +4,7 @@ import Button from "@material-ui/core/Button";
 import axios from "axios";
 // import { data_Step_3 as data } from "./data";
 import PantImage from "../../../images/pants.jpg";
+import { getStyleOptionsByGarmentType } from "../../../helper/helperFunctions";
 
 export default function Step_3({ formData, setForm, navigation, progress }) {
   // formData.step_3.custom = {};
@@ -12,6 +13,7 @@ export default function Step_3({ formData, setForm, navigation, progress }) {
   const [apiData, setApiData] = useState([]);
   const [readyMade, setReadyMade] = useState([]);
   const [custom, setCustom] = useState([]);
+  const [showOptions, setShowOptions] = useState(false);
 
   /////
   const onChecked = (e) => {
@@ -41,19 +43,22 @@ export default function Step_3({ formData, setForm, navigation, progress }) {
   };
 
   const fetchData = () => {
-    axios
-      .get(
-        `http://localhost:3232/api/styleOptions/${formData.step_2.garment_type}/${formData.step_1.gender}`
-      )
-      .then((response) => {
-        console.log(response);
-        let data = response.data.data;
+    getStyleOptionsByGarmentType(
+      formData.step_2.garment_type,
+      formData.step_1.gender
+    ).then((data) => {
+      if (data.length > 0) {
         let readyMade = data.filter((i) => i.custom === 0);
         setReadyMade(readyMade);
         let custom = data.filter((i) => i.custom === 1);
         setCustom(custom);
-        // setApiData(response.data.data);
-      });
+        setShowOptions(true);
+      } else {
+        setShowOptions(false);
+      }
+
+      // setApiData(response.data.data);
+    });
   };
   console.log({ formData });
 
@@ -64,134 +69,146 @@ export default function Step_3({ formData, setForm, navigation, progress }) {
     console.log({ formData });
   }, []);
   console.log(custom);
+
   return (
     <div>
-      {readyMade.map((i, index) => {
-        return (
-          <div key={index} className="step_form-wrapper">
-            <h3 className="selection_subheading">{i.title}</h3>
+      {showOptions ? (
+        <div>
+          {readyMade.map((i, index) => {
+            return (
+              <div key={index} className="step_form-wrapper">
+                <h3 className="selection_subheading">{i.title}</h3>
+                <div className="selection_wrap grid4col">
+                  {i.options.map((j) => {
+                    return (
+                      <div key={j._id} className={j.input_type}>
+                        <input
+                          type={j.input_type}
+                          id={j.title.toLowerCase()}
+                          value={j.title.toLowerCase()}
+                          name={`step_3.${i.title.toLowerCase()}`}
+                          checked={
+                            formData.step_3[i.title.toLowerCase()] ===
+                            j.title.toLowerCase()
+                          }
+                          onChange={setForm}
+                        />{" "}
+                        <label
+                          htmlFor={j.title.toLowerCase()}
+                          style={{
+                            backgroundImage: `url(${process.env.REACT_APP_BACKEND_URL}/uploads/${j.image})`,
+                          }}
+                        >
+                          {j.title} <div className="overley" />
+                        </label>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+
+          <div className="step_form-wrapper">
+            <h3 className="selection_subheading">Choose Style</h3>
             <div className="selection_wrap grid4col">
-              {i.options.map((j) => {
-                return (
-                  <div key={j._id} className={j.input_type}>
-                    <input
-                      type={j.input_type}
-                      id={j.title.toLowerCase()}
-                      value={j.title.toLowerCase()}
-                      name={`step_3.${i.title.toLowerCase()}`}
-                      checked={
-                        formData.step_3[i.title.toLowerCase()] ===
-                        j.title.toLowerCase()
-                      }
-                      onChange={setForm}
-                    />{" "}
-                    <label
-                      htmlFor={j.title.toLowerCase()}
-                      style={{ backgroundImage: `url(${PantImage})` }}
-                    >
-                      {j.title} <div className="overley" />
-                    </label>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
-
-      <div className="step_form-wrapper">
-        <h3 className="selection_subheading">Choose Style</h3>
-        <div className="selection_wrap grid4col">
-          <div className="radio">
-            <input
-              type="radio"
-              id="ready"
-              value="ready"
-              name={`step_3.garment_style`}
-              checked={formData.step_3.garment_style === "ready"}
-              onChange={setForm}
-            />
-            <label htmlFor="ready">
-              Ready Made <div className="overley" />
-            </label>
-          </div>
-          <div className="radio">
-            <input
-              type="radio"
-              id="custom"
-              value="custom"
-              name={`step_3.garment_style`}
-              checked={formData.step_3.garment_style === "custom"}
-              onChange={setForm}
-            />{" "}
-            <label htmlFor="custom">
-              Custom <div className="overley" />
-            </label>
-          </div>
-        </div>
-      </div>
-
-      {formData.step_3.garment_style === "ready" && (
-        <div className="step_form-wrapper">
-          <h3 className="selection_subheading">Ready Style Number</h3>
-          <div>
-            <input
-              type="text"
-              value={formData.step_3.ready_style_number}
-              name="step_3.ready_style_number"
-              onChange={setForm}
-              autoComplete="off"
-            />
-          </div>
-        </div>
-      )}
-
-      {formData.step_3.garment_style === "custom" &&
-        custom.map((i, index) => {
-          return (
-            <div key={index} className="step_form-wrapper">
-              <h3 className="selection_subheading">{i.title}</h3>
-              <div className="selection_wrap grid4col">
-                {i.options.map((j) => {
-                  console.log({ j });
-                  return (
-                    <div key={j._id} className={j.input_type}>
-                      <input
-                        type={j.input_type}
-                        id={j._id}
-                        value={j.title}
-                        name={`custom.${i.title
-                          .toLowerCase()
-                          .split(" ")
-                          .join("_")}`}
-                        onChange={setForm}
-                        checked={
-                          formData.custom[
-                            i.title.toLowerCase().split(" ").join("_")
-                          ] === j.title
-                        }
-                        // onChange={setForm}
-                      />
-
-                      <label
-                        htmlFor={j._id}
-                        style={{ backgroundImage: `url(${PantImage})` }}
-                      >
-                        {j.title} <div className="overley" />
-                      </label>
-                    </div>
-                  );
-                })}
+              <div className="radio">
+                <input
+                  type="radio"
+                  id="ready"
+                  value="ready"
+                  name={`step_3.garment_style`}
+                  checked={formData.step_3.garment_style === "ready"}
+                  onChange={setForm}
+                />
+                <label htmlFor="ready">
+                  Ready Made <div className="overley" />
+                </label>
+              </div>
+              <div className="radio">
+                <input
+                  type="radio"
+                  id="custom"
+                  value="custom"
+                  name={`step_3.garment_style`}
+                  checked={formData.step_3.garment_style === "custom"}
+                  onChange={setForm}
+                />{" "}
+                <label htmlFor="custom">
+                  Custom <div className="overley" />
+                </label>
               </div>
             </div>
-          );
-        })}
-      <div className="step_form-wrapper">
-        <div className="form_footer">
-          <Button onClick={() => navigation.previous()}>Back</Button>
-          <Button onClick={() => navigation.next()}>Next</Button>
+          </div>
+
+          {formData.step_3.garment_style === "ready" && (
+            <div className="step_form-wrapper">
+              <h3 className="selection_subheading">Ready Style Number</h3>
+              <div>
+                <input
+                  type="text"
+                  value={formData.step_3.ready_style_number}
+                  name="step_3.ready_style_number"
+                  onChange={setForm}
+                  autoComplete="off"
+                />
+              </div>
+            </div>
+          )}
+
+          {formData.step_3.garment_style === "custom" &&
+            custom.map((i, index) => {
+              return (
+                <div key={index} className="step_form-wrapper">
+                  <h3 className="selection_subheading">{i.title}</h3>
+                  <div className="selection_wrap grid4col">
+                    {i.options.map((j) => {
+                      console.log({ j });
+                      return (
+                        <div key={j._id} className={j.input_type}>
+                          <input
+                            type={j.input_type}
+                            id={j._id}
+                            value={j.title}
+                            name={`custom.${i.title
+                              .toLowerCase()
+                              .split(" ")
+                              .join("_")}`}
+                            onChange={setForm}
+                            checked={
+                              formData.custom[
+                                i.title.toLowerCase().split(" ").join("_")
+                              ] === j.title
+                            }
+                          />
+
+                          <label
+                            htmlFor={j._id}
+                            style={{
+                              backgroundImage: `url(${process.env.REACT_APP_BACKEND_URL}/uploads/${j.image})`,
+                            }}
+                          >
+                            {j.title} <div className="overley" />
+                          </label>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          <div className="step_form-wrapper">
+            <div className="form_footer">
+              <Button onClick={() => navigation.previous()}>Back</Button>
+              <Button onClick={() => navigation.next()}>Next</Button>
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div>
+          <h3>Nothing to show Please add Options </h3>
+        </div>
+      )}
     </div>
   );
 

@@ -35,7 +35,11 @@ router.get("/styleOptions/:garmentType/:gender", (req, res) => {
   console.log(req.params);
   getStyleOptionByGarmentAndGender(req.params.garmentType, req.params.gender)
     .then((result) => {
-      res.send({ status: true, msg: "found", data: result });
+      if (result.length > 0) {
+        res.send({ status: true, msg: "found", data: result });
+      } else {
+        res.send({ status: false, msg: "Not found", data: [] });
+      }
     })
     .catch((err) => {
       console.log(err);
