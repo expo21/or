@@ -62,7 +62,7 @@ function loginUser(dispatch, email, password, history, setIsLoading, setError) {
 
   if (!!email && !!password) {
     axios
-      .post(`${process.env.REACT_APP_BACKEND_URL}/api/login`, {
+      .post(`/api/login`, {
         email,
         password,
       })
