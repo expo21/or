@@ -60,7 +60,10 @@ function loginUser(dispatch, email, password, history, setIsLoading, setError) {
 
   if (!!email && !!password) {
     axios
-      .post("http://localhost:3232/api/login", { email, password })
+      .post(`${process.env.REACT_APP_BACKEND_URL}/api/login`, {
+        email,
+        password,
+      })
       .then((response) => {
         let { status, msg, data } = response.data;
         if (status) {

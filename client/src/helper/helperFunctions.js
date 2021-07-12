@@ -4,7 +4,7 @@ import axios from "axios";
 export const addGarment = async (formData) => {
   try {
     let response = await axios.post(
-      "http://localhost:3232/api/garmentType",
+      `${process.env.REACT_APP_BACKEND_URL}/api/garmentType`,
       formData
     );
     if (response.data.status) {
@@ -19,7 +19,7 @@ export const addGarment = async (formData) => {
 export const addStyleOption = async (formData) => {
   try {
     let response = await axios.post(
-      "http://localhost:3232/api/styleOptions",
+      `${process.env.REACT_APP_BACKEND_URL}/api/styleOptions`,
       formData
     );
     if (response.data.status) {
@@ -33,7 +33,9 @@ export const addStyleOption = async (formData) => {
 // get garment list
 export const getGarmentList = async () => {
   try {
-    let response = await axios.get("http://localhost:3232/api/allGarments");
+    let response = await axios.get(
+      `${process.env.REACT_APP_BACKEND_URL}/api/allGarments`
+    );
     if (response.data.status) {
       return response.data.data;
     }
@@ -45,7 +47,9 @@ export const getGarmentList = async () => {
 // add garment style list
 export const getGarmentStyleList = async () => {
   try {
-    let response = await axios.get("http://localhost:3232/api/styleOptions");
+    let response = await axios.get(
+      `${process.env.REACT_APP_BACKEND_URL}/api/styleOptions`
+    );
     if (response.data.status) {
       return response.data.data;
     }
@@ -58,7 +62,7 @@ export const getGarmentStyleList = async () => {
 export const getStyleOptionsList = async () => {
   try {
     let response = await axios.get(
-      "http://localhost:3232/api/options/optionsList"
+      `${process.env.REACT_APP_BACKEND_URL}/api/options/optionsList`
     );
     if (response.data.status) {
       return response.data.data;
@@ -72,7 +76,7 @@ export const getStyleOptionsList = async () => {
 export const addOption = async (formData) => {
   try {
     let response = await axios.post(
-      "http://localhost:3232/api/options/addOptions",
+      `${process.env.REACT_APP_BACKEND_URL}/api/options/addOptions`,
       formData
     );
     if (response.data.status) {
@@ -87,7 +91,9 @@ export const addOption = async (formData) => {
 
 export const getOrderList = async () => {
   try {
-    let response = await axios.get("http://localhost:3232/api/order");
+    let response = await axios.get(
+      `${process.env.REACT_APP_BACKEND_URL}/api/order`
+    );
     if (response.data.status) {
       return response.data.data;
     }
