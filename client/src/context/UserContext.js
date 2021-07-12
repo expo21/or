@@ -62,7 +62,7 @@ function loginUser(dispatch, email, password, history, setIsLoading, setError) {
 
   if (!!email && !!password) {
     axios
-      .post(`/api/login`, {
+      .post(`${window.APIPATH}/api/login`, {
         email,
         password,
       })

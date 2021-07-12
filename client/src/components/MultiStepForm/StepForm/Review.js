@@ -56,14 +56,12 @@ export default function Review({ formData, navigation, progress }) {
     if (formData.step_1.order_number) {
       console.log("order number hai");
     } else {
-      axios
-        .post("http://localhost:3232/api/createOrder", formData)
-        .then((res) => {
-          console.log(res);
-          if (res.data.status) {
-            history.push("/app/orders/orderList");
-          }
-        });
+      axios.post(`${window.APIPATH}/api/createOrder`, formData).then((res) => {
+        console.log(res);
+        if (res.data.status) {
+          history.push("/app/orders/orderList");
+        }
+      });
     }
   };
 

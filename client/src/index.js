@@ -9,6 +9,8 @@ import * as serviceWorker from "./serviceWorker";
 import { LayoutProvider } from "./context/LayoutContext";
 import { UserProvider } from "./context/UserContext";
 
+window.APIPATH = "https://brown-bear-order.herokuapp.com";
+
 // import Testing from "./testing";
 ReactDOM.render(
   <LayoutProvider>

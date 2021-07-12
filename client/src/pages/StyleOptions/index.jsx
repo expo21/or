@@ -353,7 +353,7 @@ export default function StyleOptions() {
                                   ) : column.name === "image" ? (
                                     <Avatar
                                       alt={value}
-                                      src={`${process.env.REACT_APP_BACKEND_URL}/uploads/${value}`}
+                                      src={`${window.APIPATH}/uploads/${value}`}
                                     />
                                   ) : (
                                     value

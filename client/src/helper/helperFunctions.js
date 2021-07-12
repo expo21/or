@@ -3,7 +3,10 @@ import axios from "axios";
 // add garment
 export const addGarment = async (formData) => {
   try {
-    let response = await axios.post(`/api/garmentType`, formData);
+    let response = await axios.post(
+      `${window.APIPATH}/api/garmentType`,
+      formData
+    );
     if (response.data.status) {
       return response.data.status;
     }
@@ -15,7 +18,10 @@ export const addGarment = async (formData) => {
 // add style Option
 export const addStyleOption = async (formData) => {
   try {
-    let response = await axios.post(`/api/styleOptions`, formData);
+    let response = await axios.post(
+      `${window.APIPATH}/api/styleOptions`,
+      formData
+    );
     if (response.data.status) {
       return response.data.status;
     }
@@ -27,7 +33,7 @@ export const addStyleOption = async (formData) => {
 // get garment list
 export const getGarmentList = async () => {
   try {
-    let response = await axios.get(`/api/allGarments`);
+    let response = await axios.get(`${window.APIPATH}/api/allGarments`);
     if (response.data.status) {
       return response.data.data;
     }
@@ -39,7 +45,7 @@ export const getGarmentList = async () => {
 // add garment style list
 export const getGarmentStyleList = async () => {
   try {
-    let response = await axios.get(`/api/styleOptions`);
+    let response = await axios.get(`${window.APIPATH}/api/styleOptions`);
     if (response.data.status) {
       return response.data.data;
     }
@@ -51,7 +57,7 @@ export const getGarmentStyleList = async () => {
 //get all style Options
 export const getStyleOptionsList = async () => {
   try {
-    let response = await axios.get(`/api/options/optionsList`);
+    let response = await axios.get(`${window.APIPATH}/api/options/optionsList`);
     if (response.data.status) {
       return response.data.data;
     }
@@ -63,7 +69,10 @@ export const getStyleOptionsList = async () => {
 // add new Option
 export const addOption = async (formData) => {
   try {
-    let response = await axios.post(`/api/options/addOptions`, formData);
+    let response = await axios.post(
+      `${window.APIPATH}/api/options/addOptions`,
+      formData
+    );
     if (response.data.status) {
       return response.data.status;
     }
@@ -76,7 +85,7 @@ export const addOption = async (formData) => {
 
 export const getOrderList = async () => {
   try {
-    let response = await axios.get(`/api/order`);
+    let response = await axios.get(`${window.APIPATH}/api/order`);
     if (response.data.status) {
       return response.data.data;
     }
@@ -89,7 +98,9 @@ export const getOrderList = async () => {
 
 export const getOrderDetails = async (orderNumber) => {
   try {
-    let response = await axios.get(`/api/orderByOrderId/${orderNumber}`);
+    let response = await axios.get(
+      `${window.APIPATH}/api/orderByOrderId/${orderNumber}`
+    );
     if (response.data.status) {
       return response.data.data;
     }
@@ -102,7 +113,9 @@ export const getOrderDetails = async (orderNumber) => {
 
 export const garmentListByGender = async (gender) => {
   try {
-    let response = await axios.get(`/api/garmentsByGender/${gender}`);
+    let response = await axios.get(
+      `${window.APIPATH}/api/garmentsByGender/${gender}`
+    );
     console.log(response);
     if (response.data.status) {
       return response.data.data;
@@ -118,7 +131,7 @@ export const garmentListByGender = async (gender) => {
 export const getStyleOptionsByGarmentType = async (garment_type, gender) => {
   try {
     let response = await axios.get(
-      `/api/styleOptions/${garment_type}/${gender}`
+      `${window.APIPATH}/api/styleOptions/${garment_type}/${gender}`
     );
     if (response.data.status) {
       return response.data.data;

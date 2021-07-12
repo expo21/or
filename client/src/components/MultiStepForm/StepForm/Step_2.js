@@ -55,7 +55,7 @@ export default function Step_2({ formData, setForm, navigation, progress }) {
                 <label
                   htmlFor={i.title}
                   style={{
-                    backgroundImage: `url(${process.env.REACT_APP_BACKEND_URL}/uploads/${i.image})`,
+                    backgroundImage: `url(${window.APIPATH}/uploads/${i.image})`,
                   }}
                 >
                   {i.title} <div className="overley" />
